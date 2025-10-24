@@ -1,27 +1,30 @@
 # Gunakan PHP 8.2 dengan Apache
 FROM php:8.2-apache
 
-# Set working directory
-WORKDIR /var/www/html
-
-# Install ekstensi yang dibutuhkan Laravel
+# Install ekstensi dan tools
 RUN apt-get update && apt-get install -y \
-    git unzip zip libpng-dev libjpeg-dev libfreetype6-dev \
+    git unzip zip libpng-dev libjpeg-dev libfreetype6-dev nodejs npm \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd pdo pdo_mysql
 
-# Install Composer (supaya perintah composer install bisa jalan)
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+# Set working directory
+WORKDIR /var/www/html
 
-# Copy semua file proyek ke container
+# Copy semua file
 COPY . .
 
-# Ubah konfigurasi Apache agar menggunakan folder /public
-RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf \
-    && sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
-
-# Install dependensi Laravel
+# Install dependency Laravel
 RUN composer install --no-dev --optimize-autoloader
 
-# Jalankan Laravel
-CMD php artisan key:generate && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT
+# Build frontend (kalau pakai Vite atau Mix)
+RUN npm install && npm run build
+
+# Pastikan Apache menuju ke folder public
+RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+
+# Buka port 8080 (Railway pakai ini)
+EXPOSE 8080
+
+# Jalankan Laravel dengan Apache
+CMD ["apache2-foreground"]
