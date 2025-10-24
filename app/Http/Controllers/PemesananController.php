@@ -28,7 +28,13 @@ class PemesananController extends Controller
     // Form tambah pemesanan
     public function create()
     {
-        $products = DB::table('products')->where('status', 'aktif')->get();
+        $products = DB::table('products')
+        ->where('status', 'aktif')
+        ->whereIn('id_produk', function ($query) {
+            $query->select('id_produk')->from('resep_produk');
+        })
+        ->get();
+
         return view('pemesanan.pemesanan_create', compact('products'));
     }
 
