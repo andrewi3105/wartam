@@ -3,258 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tambah Resep Baru - Warkop</title>
+    <title>Kelola Resep Produk - Warkop</title>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <style>
-    * { box-sizing: border-box; font-family: Arial, sans-serif; margin: 0; padding: 0; }
-    body { background-color: #f7f7f7; }
+        * { box-sizing: border-box; font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        body { display: flex; min-height: 100vh; background-color: #f7f7f7; }
 
-    /* ====== KONTEN UTAMA ====== */
-    .main {
-        margin-left: 220px; /* ruang untuk sidebar */
-        padding: 25px 40px;
-        transition: margin-left 0.3s ease;
-    }
+        /* Main content area */
+        .main { flex: 1; padding: 25px 40px; margin-left: 220px; transition: margin-left 0.3s ease-in-out; }
 
-    /* ====== RESPONSIVE UNTUK HP ====== */
-    @media (max-width: 900px) {
-        .main {
-            margin-left: 0; /* sidebar hidden */
-            padding: 15px;
-        }
-    }
-
-    /* ====== HEADER ====== */
-    .header {
-        background-color: #f9f9f9;
-        padding: 20px 25px;
-        border-radius: 8px;
-        margin-bottom: 25px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        transition: all 0.3s ease;
-    }
-
-    .header h1 {
-        font-size: 20px;
-        color: #111;
-        transition: text-align 0.3s ease;
-    }
-
-    /* ====== FORM FULL WIDTH ====== */
-    form {
-        background-color: #fff;
-        padding: 20px 25px;
-        border-radius: 10px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        width: 100%;       /* full width di main */
-        box-sizing: border-box;
-    }
-
-    .form-group { margin-bottom: 15px; }
-    label { display: block; font-size: 14px; margin-bottom: 6px; font-weight: bold; color: #333; }
-    input, select {
-        width: 100%;
-        padding: 8px 10px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-        font-size: 14px;
-    }
-
-    /* ====== BAGIAN BAHAN ====== */
-    .bahan-section { margin-top: 20px; }
-    .bahan-section h3 { margin-bottom: 10px; font-size: 16px; color: #333; }
-
-    .bahan-item {
-        display: grid;
-        grid-template-columns: 2fr 1fr auto auto;
-        gap: 10px;
-        align-items: center;
-        margin-bottom: 10px;
-    }
-
-    .bahan-item button {
-        border: none;
-        padding: 6px 10px;
-        border-radius: 6px;
-        color: #fff;
-        cursor: pointer;
-        font-size: 14px;
-    }
-
-    .hapus-bahan { background-color: crimson; }
-    .hapus-bahan:hover { background-color: #a30c2d; }
-    .add-bahan { background-color: #6b46c1; }
-    .add-bahan:hover { background-color: #54309c; }
-
-    .submit-btn {
-        margin-top: 20px;
-        background-color: #111;
-        color: #fff;
-        padding: 10px 18px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 15px;
-    }
-    .submit-btn:hover { background-color: #444; }
-
-    .alert { background-color: #ffdddd; border-left: 5px solid crimson; padding: 10px; margin-bottom: 15px; color: #333; }
-    .success { background-color: #ddffdd; border-left: 5px solid green; padding: 10px; margin-bottom: 15px; color: #333; }
-
-    /* ==== RESPONSIVE MODE ==== */
-    @media (max-width: 768px) {
-        .bahan-item {
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-
-        .bahan-item button {
-            width: 100%;
-            font-size: 13px;
-            padding: 8px;
-        }
-
-        .add-bahan, .hapus-bahan {
-            grid-column: span 2;
-        }
-
+        /* Header */
         .header {
-            flex-direction: column;
-            align-items: center; /* judul ke tengah */
-            text-align: center;
+            background-color: #f9f9f9;
+            padding: 20px 25px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
         }
-
-        .header h1 {
-            font-size: 18px;
-            text-align: center;
-            width: 100%;
+        .header h1 { font-size: 20px; color: #111; flex-shrink: 0; }
+        .header .actions { display: flex; align-items: center; gap: 10px; }
+        .header button {
+            padding: 8px 14px;
+            border-radius: 4px;
+            font-size: 14px;
+            border: none;
+            background-color: #111;
+            color: #fff;
+            cursor: pointer;
         }
-    }
-</style>
+        .header button:hover { background-color: #444; }
 
+        /* Table (desktop) */
+        .table-header, .resep-item {
+            display: grid;
+            grid-template-columns: 2fr 1.5fr 1fr {{ Auth::user()->role !== 'kasir' ? '0.5fr' : '' }};
+            align-items: center;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-align: left;
+            gap: 10px;
+        }
+        .table-header {
+            background-color: #ddd;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .resep-item {
+            background-color: #fff;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .resep-item span { font-size: 14px; color: #333; }
+        .resep-item .actions {
+            display: flex; justify-content: flex-start; align-items: center; gap: 10px;
+        }
+        .resep-item .actions i { cursor: pointer; color: #333; }
+        .resep-item .actions i:hover { color: #000; }
+
+        /* RESPONSIVE MODE */
+        @media (max-width: 900px) {
+            body { flex-direction: column; }
+            .main { margin-left: 0; padding: 15px; }
+
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .header h1 {
+                width: 100%;
+                text-align: center; /* teks tengah di layar kecil */
+            }
+            .header .actions {
+                width: 100%;
+                justify-content: center;
+            }
+            .header button { width: 100%; }
+
+            /* ubah tabel jadi tampilan card di HP */
+            .table-header { display: none; }
+
+            .resep-item {
+                display: block;
+                padding: 15px;
+                border-radius: 8px;
+            }
+
+            .resep-item span,
+            .resep-item .actions {
+                display: flex;
+                justify-content: space-between;
+                border-bottom: 1px solid #eee;
+                padding: 6px 0;
+                font-size: 14px;
+            }
+
+            .resep-item span:last-child,
+            .resep-item .actions:last-child {
+                border-bottom: none;
+            }
+
+            .resep-item span::before {
+                content: attr(data-label);
+                font-weight: bold;
+                color: #555;
+                margin-right: 10px;
+            }
+
+            .resep-item .actions {
+                justify-content: flex-end;
+            }
+        }
+    </style>
 </head>
 <body>
 
-{{-- ✅ Sidebar tetap tampil --}}
-@include('layouts.sidebar')
+    {{-- Sidebar --}}
+    @include('layouts.sidebar')
 
-<div class="main" id="mainContent">
-    <div class="header">
-        <h1>TAMBAH RESEP BARU</h1>
-    </div>
+    <div class="main">
+        <div class="header">
+            <h1>KELOLA RESEP PRODUK</h1>
 
-    @if(session('error'))
-        <div class="alert">{{ session('error') }}</div>
-    @endif
-    @if(session('success'))
-        <div class="success">{{ session('success') }}</div>
-    @endif
-
-    <form id="formResep" action="{{ route('resep.store') }}" method="POST">
-        @csrf
-
-        <div class="form-group">
-            <label for="id_produk">Produk</label>
-            <select name="id_produk" id="id_produk" required>
-                <option value="">-- Pilih Produk --</option>
-                @foreach($products as $p)
-                    <option value="{{ $p->id_produk }}">{{ $p->nama_produk }}</option>
-                @endforeach
-            </select>
-        </div>
-
-        <div class="bahan-section">
-            <h3>Daftar Bahan</h3>
-            <div id="bahanContainer">
-                <div class="bahan-item">
-                    <select name="id_barang[]" required>
-                        <option value="">-- Pilih Bahan --</option>
-                        @foreach($stok as $s)
-                            <option value="{{ $s->id_barang }}">{{ $s->nama_barang }}</option>
-                        @endforeach
-                    </select>
-                    <input type="text" name="jumlah_per_porsi[]" placeholder="Contoh: 3/12 atau 0.25" required>
-                    <button type="button" class="hapus-bahan"><i class="fa fa-trash"></i></button>
-                    <button type="button" class="add-bahan"><i class="fa fa-plus"></i></button>
-                </div>
+            {{-- Tombol tambah hanya untuk admin --}}
+            @if(Auth::user()->role !== 'kasir')
+            <div class="actions">
+                <button type="button" onclick="window.location='{{ route('resep.create') }}'">+ Tambah Resep</button>
             </div>
+            @endif
         </div>
 
-        <button type="submit" class="submit-btn">Simpan Resep</button>
-    </form>
-</div>
+        <div class="table-header">
+            <div>Nama Produk</div>
+            <div>Bahan (Stok)</div>
+            <div>Jumlah per Porsi</div>
+            @if(Auth::user()->role !== 'kasir')
+                <div>Aksi</div>
+            @endif
+        </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const container = document.getElementById('bahanContainer');
-    const form = document.getElementById('formResep');
+        @forelse($resep as $r)
+            <div class="resep-item">
+                <span data-label="Nama Produk">{{ $r->nama_produk }}</span>
+                <span data-label="Bahan (Stok)">{{ $r->nama_barang }}</span>
+                <span data-label="Jumlah per Porsi">{{ $r->jumlah_per_porsi }}</span>
 
-    // === TAMBAH FIELD BAHAN ===
-    function tambahBahan() {
-        const newRow = document.createElement('div');
-        newRow.classList.add('bahan-item');
-        newRow.innerHTML = `
-            <select name="id_barang[]" required>
-                <option value="">-- Pilih Bahan --</option>
-                @foreach($stok as $s)
-                    <option value="{{ $s->id_barang }}">{{ $s->nama_barang }}</option>
-                @endforeach
-            </select>
-            <input type="text" name="jumlah_per_porsi[]" placeholder="Contoh: 3/12 atau 0.25" required>
-            <button type="button" class="hapus-bahan"><i class="fa fa-trash"></i></button>
-            <button type="button" class="add-bahan"><i class="fa fa-plus"></i></button>
-        `;
-        container.appendChild(newRow);
-        perbaruiTombolHapus();
-    }
-
-    // === ATUR TOMBOL HAPUS ===
-    function perbaruiTombolHapus() {
-        const items = container.querySelectorAll('.bahan-item');
-        items.forEach(item => {
-            const hapusBtn = item.querySelector('.hapus-bahan');
-            hapusBtn.style.display = items.length === 1 ? 'none' : 'inline-block';
-        });
-    }
-
-    // === CEK DUPLIKASI BAHAN ===
-    form.addEventListener('submit', function(e) {
-        const selects = form.querySelectorAll('select[name="id_barang[]"]');
-        const values = Array.from(selects).map(s => s.value).filter(v => v !== '');
-        const unique = new Set(values);
-        if (values.length !== unique.size) {
-            e.preventDefault();
-            alert('Terdapat bahan yang sama di dalam daftar. Mohon gunakan bahan yang berbeda.');
-        }
-    });
-
-    // === EVENT TAMBAH / HAPUS ===
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.add-bahan')) tambahBahan();
-        if (e.target.closest('.hapus-bahan')) {
-            e.target.closest('.bahan-item').remove();
-            perbaruiTombolHapus();
-        }
-    });
-
-    // === KONVERSI PECAHAN ===
-    document.addEventListener('blur', function(e) {
-        if (e.target.name === 'jumlah_per_porsi[]') {
-            const val = e.target.value.trim();
-            if (/^\d+\/\d+$/.test(val)) {
-                const [a, b] = val.split('/').map(Number);
-                if (b !== 0) e.target.value = (a / b).toFixed(4);
-            }
-        }
-    }, true);
-
-    perbaruiTombolHapus();
-});
-</script>
-
+                @if(Auth::user()->role !== 'kasir')
+                <div class="actions" data-label="Aksi">
+                    <form action="{{ route('resep.destroy', $r->id) }}" method="POST" style="display:inline-block;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" onclick="return confirm('Hapus resep ini?')" style="background:none; border:none; padding:0; cursor:pointer;">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </form>
+                </div>
+                @endif
+            </div>
+        @empty
+            <p style="text-align:center; color:#777;">Belum ada data resep.</p>
+        @endforelse
+    </div>
 </body>
 </html>
