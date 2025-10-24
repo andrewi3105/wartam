@@ -1,26 +1,27 @@
+# Gunakan PHP 8.2 dengan Apache
 FROM php:8.2-apache
-
-# Install dependency PHP
-RUN apt-get update && apt-get install -y \
-    libpng-dev libjpeg-dev libfreetype6-dev zip git unzip && \
-    docker-php-ext-configure gd --with-freetype --with-jpeg && \
-    docker-php-ext-install gd pdo pdo_mysql
-
-# Copy semua file ke container
-COPY . /var/www/html
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Ganti root Apache ke /public
-RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
+# Install ekstensi yang dibutuhkan Laravel
+RUN apt-get update && apt-get install -y \
+    git unzip zip libpng-dev libjpeg-dev libfreetype6-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd pdo pdo_mysql
 
-# Tambahkan ServerName supaya tidak ada warning
-RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+# Install Composer (supaya perintah composer install bisa jalan)
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Izinkan Apache dengar di port Railway ($PORT)
-ENV PORT=8080
-EXPOSE 8080
+# Copy semua file proyek ke container
+COPY . .
 
-# Jalankan Apache di foreground
-CMD ["apache2-foreground"]
+# Ubah konfigurasi Apache agar menggunakan folder /public
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf \
+    && sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
+
+# Install dependensi Laravel
+RUN composer install --no-dev --optimize-autoloader
+
+# Jalankan Laravel
+CMD php artisan key:generate && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT
